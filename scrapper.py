@@ -25,17 +25,25 @@ options_list = soup.find_all('ul',class_="wpProQuiz_questionList")
 # print(type(questions_list))
 
 Qrow = 1
-Qcol = 2
+Qcol = 1
 Orow = Qrow + 1
-Ocol = 2
+Ocol = 1
+NumberRow = 1
+NumberCol = 0
+sheet.col(2).width = 256 * 50
 sheet.write(0,0, 'QNO')
 sheet.write(0,1, 'Question')
 
 for i,j in zip(questions_list,options_list):
-    sheet.write(Qrow,Qcol,str(i.text.replace('\n', '').strip()))
+    sheet.write(NumberRow,NumberCol,count)
+    question = str(i.text.replace('\n', '').strip())
+    index_val = question.find('.')
+    sheet.write(Qrow,Qcol,question[index_val+1:].strip())
     Orow = Qrow + 1
     sheet.write(Orow,Ocol,str(j.text.replace('\n','').strip().replace(" ", "")))
     Qrow = Orow + 1
+    NumberRow += 2
+    count += 1
 
 
 excel_file.save(file_name) 
