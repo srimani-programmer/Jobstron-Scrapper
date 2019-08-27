@@ -25,6 +25,13 @@ sheet.col(3).width = 512 * 100
 sheet.col(3).height = 512 * 100
 sheet.col(0).width = 100 * 50
 sheet.col(1).width = 100 * 50
+sheet.col(8).width = 75 * 50
+sheet.col(9).width = 512 * 100
+sheet.col(9).height = 512 * 100
+sheet.col(4).width = 100 * 50
+sheet.col(5).width = 100 * 50
+sheet.col(6).width = 100 * 50
+sheet.col(7).width = 100 * 50
 
 # Output Data Constraints
 
@@ -40,14 +47,25 @@ Remarks_col = 1
 QuestionNumber_row = 1
 QuestionNumber_col = 2
 
+
 # Related to Question
 Question_row = 1
 Question_col = 3
-    
-Ocol = 1
-NumberRow = 1
-NumberCol = 0
 
+# Related to Options
+OptionNumber_row = 1
+OptionNumber_colA = 4
+OptionNumber_colB = 5
+OptionNumber_colC = 6
+OptionNumber_colD = 7
+
+# Correct Answer List
+CorrectOption_row = 1
+CorrectOption_col = 8
+
+# Solution List
+CorrectSolution_row = 1
+CorrectSolution_col = 9
 
 # Setting the Request Count
 req_count = 1
@@ -61,6 +79,7 @@ while True:
 
     # Response Object
     res = driver.execute_script('return document.documentElement.outerHTML')
+    
 
     # Intialising the Soup Object
     soup = BeautifulSoup(res,'lxml')
@@ -92,26 +111,50 @@ while True:
     for i in options_list:
         opt = i.text.replace('\n','').strip().replace(" ", "")
         opt = opt.split(')')
-        
+        optionA = opt[1][0:len(opt[1])-1].strip()
+        optionB = opt[2][0:len(opt[2])-1].strip()
+        optionC = opt[3][0:len(opt[3])-1].strip()
+        optionD = opt[4][0:len(opt[4])-1].strip()
+        sheet.write(OptionNumber_row,OptionNumber_colA,optionA)
+        sheet.write(OptionNumber_row,OptionNumber_colB,optionB)
+        sheet.write(OptionNumber_row,OptionNumber_colC,optionC)
+        sheet.write(OptionNumber_row,OptionNumber_colD,optionD)
+        OptionNumber_row += 1
+    
 
+    driver.find_element_by_name('checkSingle').click()
 
-    '''
-    for i,j in zip(questions_list,options_list):
-        sheet.write(NumberRow,NumberCol,Question_Count)
-        question = str(i.text.replace('\n', '').strip())
-        index_val = question.find('.')
-        sheet.write(Qrow,Qcol,question[index_val+1:].strip())
-        Orow = Qrow + 1
-        sheet.write(Orow,Ocol,str(j.text.replace('\n','').strip().replace(" ", "")))
-        Qrow = Orow + 1
-        NumberRow += 2
-        count += 1
-    '''
+    res = driver.execute_script('return document.documentElement.outerHTML')
 
+    raw_data = BeautifulSoup(res,'lxml')
+
+    # wpProQuiz_response
+    correctOption = raw_data.find_all('div',class_="wpProQuiz_incorrect")
+   
+    # Dealing with Correct Answer 
+    for i in correctOption:
+        data = i.text.strip()
+        data = data.split('Solution:')
+        if(len(data) >= 2):
+            sheet.write(CorrectOption_row,CorrectOption_col,data[0].strip()[-1].strip())
+        else:
+            sheet.write(CorrectOption_row,CorrectOption_col,data[0][21])
+        CorrectOption_row += 1
+    
+    # Dealing with Solution
+
+    for i in correctOption:
+        data = i.text.strip()
+        data = data.split('Solution:')
+        if(len(data) >= 2):
+            sheet.write(CorrectSolution_row,CorrectSolution_col,data[1].strip())
+        else:
+            sheet.write(CorrectSolution_row,CorrectSolution_col,data[0][33:].strip())
+        CorrectSolution_row += 1
 
     excel_file.save(file_name) 
     req_count += 1
-    if(req_count > 1):
+    if(req_count > 10):
         break
 
 
