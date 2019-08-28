@@ -4,9 +4,9 @@ import xlwt
 import re
 
 # Creating the Notebook Object
-file_name = 'FreshersLiveTest01.xls'
+file_name = 'FreshersLiveMainSheet.xls'
 excel_file = xlwt.Workbook()
-sheet = excel_file.add_sheet('FreshersLiveTest01',cell_overwrite_ok=True)
+sheet = excel_file.add_sheet('FreshersLiveMainSheet',cell_overwrite_ok=True)
 
 # Main Constraints
 sheet.write(0,0, 'Source')
@@ -109,9 +109,9 @@ try:
     for i,j in zip(concepts_links,questionsCountValues):
         numberOfPages = int(j)//20
         url = i
-       # optionNumber = 1
-       # numberOfQuestions = int(j)
-       # maxNumber = 0    
+        #optionNumber = 1
+        #numberOfQuestions = int(j)
+        #maxNumber = 0    
         for req in range(1, numberOfPages+2):
             driver.get(url)
             r1 = driver.execute_script('return document.documentElement.outerHTML')
@@ -143,14 +143,15 @@ try:
             for i in optionRow:
                 optionsArray.append(i.text.replace('\n','\t').strip())
             
-            
             # Calculating the Length of options Array
             optionsArrayLengthCount = 0
 
             while optionsArrayLengthCount <= len(optionsArray) - 3:
-                optionA,optionB = optionsArray[optionsArrayLengthCount].split('\t')
-                optionC,optionD = optionsArray[optionsArrayLengthCount+1].split('\t')
-                OptionE = optionsArray[optionsArrayLengthCount+2]
+                try:
+                    optionA,optionB = optionsArray[optionsArrayLengthCount].split('\t')
+                    optionC,optionD = optionsArray[optionsArrayLengthCount+1].split('\t')
+                    OptionE = optionsArray[optionsArrayLengthCount+2]
+                except Exception:pass
                 sheet.write(OptionNumber_row,OptionNumber_colA,optionA.strip())
                 sheet.write(OptionNumber_row,OptionNumber_colB,optionB.strip())
                 sheet.write(OptionNumber_row,OptionNumber_colC,optionC.strip())
@@ -161,61 +162,42 @@ try:
 
             # Deallocating the Memory
             del(optionsArray)
-            '''
-
-            # Solution Array
-            solutionArray = list()
-
-            # Dealing with Correct Answer and Solution
-            if(numberOfQuestions - 20 >= 0):
-                maxNumber = 20
-                numberOfQuestions -= 20
-            else:
-                maxNumber = numberOfQuestions
-                numberOfQuestions = 0
-
-            for sol in range(optionNumber,maxNumber+optionNumber):
-                driver.find_element_by_id('optionset{}_1'.format(sol)).click()
-                res1 = driver.execute_script('return document.documentElement.outerHTML')
-                driver.find_element_by_id('showans{}'.format(sol)).click()
-                res1 = driver.execute_script('return document.documentElement.outerHTML')
-                solData = BeautifulSoup(res1,'lxml')
-                exp = solData.find_all('div',class_="explanation")
+            #Dealing with Correct Answer and Solution
+            optionsAndAnswers = s1.find_all('div',class_="wholewrap")
+            myAnswers = list()
+            for sol in optionsAndAnswers:
+                sol = sol.find_all('div',class_="explanation")
+                for j in sol:
+                    myAnswers.append(j.text.replace('\n',''))
             
-                # Adding the Results to the Page
-                for ans in exp:
-                    solutionArray.append(ans.text.replace('\n',' '))
-            # Writing the Data to the Excel File
+            # Adding Content to the Sheet
 
-            for i in solutionArray:
-                keyData = i.split('Explanation:')
-                correctAnswer = keyData[0].strip()
-                correctAnswer = correctAnswer.split(':')
-                correctAnswer = correctAnswer[1].strip()
-                approachedSolution = keyData[1].strip()
-                sheet.write(CorrectOption_row,CorrectOption_col,correctAnswer)
-                sheet.write(CorrectSolution_row,CorrectSolution_col,approachedSolution)
+            for ans in myAnswers:
+                explanation = ans.split('Explanation:')
+                correctAns = explanation[0].split('Correct Ans:')
+                explanation = explanation[1].strip()
+                #print('Explanation0:',explanation[0])
+                #print(explanation)
+                #print(correctAns)
+                correctAns = correctAns[1].strip()
+                sheet.write(CorrectOption_row,CorrectOption_col,correctAns)
+                sheet.write(CorrectSolution_row,CorrectSolution_col,explanation)
                 CorrectOption_row += 1
                 CorrectSolution_row += 1
-            
-            # Deallocating the Memory
-            solutionArray.clear()
-            del(solutionArray)
-            optionNumber = optionNumber + maxNumber
-            '''
+
+            del(myAnswers)
+
             # Page Content Changer
             try:
                 if(req):
                     driver.find_element_by_link_text('Next Page').click()
             except Exception:pass
             url = driver.current_url
-
         concept_count += 1
-        '''
-        sample_count += 1
-        if(sample_count > 1):
-            break
-        '''
+        #sample_count += 1
+
+        #if(sample_count > 1):
+        #    break
 
     excel_file.save(file_name)
     driver.quit()

@@ -4,9 +4,9 @@ import xlwt
 import re
 
 # Creating the Notebook Object
-file_name = 'FreshersLive.xls'
+file_name = 'FreshersLiveMain01.xls'
 excel_file = xlwt.Workbook()
-sheet = excel_file.add_sheet('FreshersLive',cell_overwrite_ok=True)
+sheet = excel_file.add_sheet('FreshersLiveMain01',cell_overwrite_ok=True)
 
 # Main Constraints
 sheet.write(0,0, 'Source')
@@ -99,7 +99,7 @@ for i in links:
         concept_names.append(j.text.strip())
     
 
-sample_count = 1
+# sample_count = 1
 concept_count = 0
 questionCount = 1
 
@@ -108,9 +108,9 @@ questionCount = 1
 for i,j in zip(concepts_links,questionsCountValues):
     numberOfPages = int(j)//20
     url = i
-    optionNumber = 1
-    numberOfQuestions = int(j)
-    maxNumber = 0    
+    #optionNumber = 1
+    #numberOfQuestions = int(j)
+    #maxNumber = 0    
     for req in range(1, numberOfPages+2):
         driver.get(url)
         r1 = driver.execute_script('return document.documentElement.outerHTML')
@@ -159,7 +159,7 @@ for i,j in zip(concepts_links,questionsCountValues):
 
         # Deallocating the Memory
         del(optionsArray)
-
+        '''
         # Dealing with Correct Answer and Solution
         if(numberOfQuestions - 20 >= 0):
             maxNumber = 20
@@ -197,6 +197,7 @@ for i,j in zip(concepts_links,questionsCountValues):
         # Deallocating the Memory
         del(solutionArray)
         optionNumber = optionNumber + maxNumber
+        '''
         # Page Content Changer
         try:
             if(req):
@@ -204,9 +205,10 @@ for i,j in zip(concepts_links,questionsCountValues):
         except Exception:pass
         url = driver.current_url
     concept_count += 1
-    sample_count += 1
-    if(sample_count > 1):
-        break
+    #sample_count += 1
+
+    #if(sample_count > 1):
+    #    break
 
 
 excel_file.save(file_name)
