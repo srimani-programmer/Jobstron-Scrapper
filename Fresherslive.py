@@ -34,6 +34,7 @@ sheet.col(5).width = 100 * 80
 sheet.col(6).width = 100 * 80
 sheet.col(7).width = 100 * 80
 sheet.col(8).width = 100 * 80
+sheet.col(9).width = 100 * 100
 
 # Output Data Constraints
 
@@ -101,13 +102,15 @@ for i in links:
 sample_count = 1
 concept_count = 0
 questionCount = 1
-#OptionsCount = 1
 
 # Extracting the Data
 
 for i,j in zip(concepts_links,questionsCountValues):
     numberOfPages = int(j)//20
     url = i
+    optionNumber = 1
+    numberOfQuestions = int(j)
+    maxNumber = 0    
     for req in range(1, numberOfPages+2):
         driver.get(url)
         r1 = driver.execute_script('return document.documentElement.outerHTML')
@@ -157,6 +160,43 @@ for i,j in zip(concepts_links,questionsCountValues):
         # Deallocating the Memory
         del(optionsArray)
 
+        # Dealing with Correct Answer and Solution
+        if(numberOfQuestions - 20 >= 0):
+            maxNumber = 20
+            numberOfQuestions -= 20
+        else:
+            maxNumber = numberOfQuestions
+            numberOfQuestions = 0
+        # Solution Array
+        solutionArray = list()
+
+        for sol in range(optionNumber,maxNumber+1):
+            driver.find_element_by_id('optionset{}_1'.format(sol)).click()
+            res1 = driver.execute_script('return document.documentElement.outerHTML')
+            driver.find_element_by_id('showans{}'.format(sol)).click()
+            res1 = driver.execute_script('return document.documentElement.outerHTML')
+            solData = BeautifulSoup(res1,'lxml')
+            exp = solData.find_all('div',class_="explanation")
+        
+            # Adding the Results to the Page
+            for ans in exp:
+                solutionArray.append(ans.text.replace('\n',' '))
+        # Writing the Data to the Excel File
+
+        for i in solutionArray:
+            keyData = i.split('Explanation:')
+            correctAnswer = keyData[0].strip()
+            correctAnswer = correctAnswer.split(':')
+            correctAnswer = correctAnswer[1].strip()
+            approachedSolution = keyData[1].strip()
+            sheet.write(CorrectOption_row,CorrectOption_col,correctAnswer)
+            sheet.write(CorrectSolution_row,CorrectSolution_col,approachedSolution)
+            CorrectOption_row += 1
+            CorrectSolution_row += 1
+        
+        # Deallocating the Memory
+        del(solutionArray)
+        optionNumber = optionNumber + maxNumber
         # Page Content Changer
         try:
             if(req):
