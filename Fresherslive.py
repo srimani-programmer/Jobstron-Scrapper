@@ -17,21 +17,23 @@ sheet.write(0,4, 'Option_A')
 sheet.write(0,5, 'Option_B')
 sheet.write(0,6, 'Option_C')
 sheet.write(0,7, 'Option_D')
-sheet.write(0,8, 'Correct Option')
-sheet.write(0,9, 'Solution Detail')
+sheet.write(0,8, 'Option_E')
+sheet.write(0,9, 'Correct Option')
+sheet.write(0,10, 'Solution Detail')
 
 # Sheet Size Constraints
 sheet.col(3).width = 512 * 100
 sheet.col(3).height = 512 * 100
 sheet.col(0).width = 100 * 50
 sheet.col(1).width = 100 * 50
-sheet.col(8).width = 75 * 50
-sheet.col(9).width = 512 * 100
-sheet.col(9).height = 512 * 100
-sheet.col(4).width = 100 * 50
-sheet.col(5).width = 100 * 50
-sheet.col(6).width = 100 * 50
-sheet.col(7).width = 100 * 50
+sheet.col(9).width = 75 * 50
+sheet.col(10).width = 512 * 100
+sheet.col(10).height = 512 * 100
+sheet.col(4).width = 100 * 80
+sheet.col(5).width = 100 * 80
+sheet.col(6).width = 100 * 80
+sheet.col(7).width = 100 * 80
+sheet.col(8).width = 100 * 80
 
 # Output Data Constraints
 
@@ -58,14 +60,15 @@ OptionNumber_colA = 4
 OptionNumber_colB = 5
 OptionNumber_colC = 6
 OptionNumber_colD = 7
+OptionNumber_colE = 8
 
 # Correct Answer List
 CorrectOption_row = 1
-CorrectOption_col = 8
+CorrectOption_col = 9
 
 # Solution List
 CorrectSolution_row = 1
-CorrectSolution_col = 9
+CorrectSolution_col = 10
 
 
 # Storing the Website Constarints
@@ -95,9 +98,10 @@ for i in links:
         concept_names.append(j.text.strip())
     
 
-#sample_count = 1
+sample_count = 1
 concept_count = 0
 questionCount = 1
+#OptionsCount = 1
 
 # Extracting the Data
 
@@ -111,6 +115,7 @@ for i,j in zip(concepts_links,questionsCountValues):
 
         questionsList = s1.find_all('div',class_="quslist")
        # print(questionsList)
+       # Dealing with the Questions List
         for i in questionsList:
             i = i.find('div',class_="qus_txt")
             sheet.write(Source_row,Source_col,'FreshersLive')
@@ -124,12 +129,44 @@ for i,j in zip(concepts_links,questionsCountValues):
             QuestionNumber_row += 1
             questionCount += 1
             Question_row += 1
+        
+        # Dealing with the Options 
+
+        optionRow = s1.find_all('div',class_="optrow")
+        # Creating a new array to store the new results of options
+        optionsArray = list()
+
+        for i in optionRow:
+            optionsArray.append(i.text.replace('\n','\t').strip())
+        
+        # Calculating the Length of options Array
+        optionsArrayLengthCount = 0
+
+        while optionsArrayLengthCount <= len(optionsArray) - 3:
+            optionA,optionB = optionsArray[optionsArrayLengthCount].split('\t')
+            optionC,optionD = optionsArray[optionsArrayLengthCount+1].split('\t')
+            OptionE = optionsArray[optionsArrayLengthCount+2]
+            sheet.write(OptionNumber_row,OptionNumber_colA,optionA.strip())
+            sheet.write(OptionNumber_row,OptionNumber_colB,optionB.strip())
+            sheet.write(OptionNumber_row,OptionNumber_colC,optionC.strip())
+            sheet.write(OptionNumber_row,OptionNumber_colD,optionD.strip())
+            sheet.write(OptionNumber_row,OptionNumber_colE,OptionE.strip())
+            OptionNumber_row += 1
+            optionsArrayLengthCount += 3
+
+        # Deallocating the Memory
+        del(optionsArray)
+
+        # Page Content Changer
         try:
             if(req):
                 driver.find_element_by_link_text('Next Page').click()
         except Exception:pass
         url = driver.current_url
     concept_count += 1
+    sample_count += 1
+    if(sample_count > 1):
+        break
 
 
 excel_file.save(file_name)
