@@ -4,9 +4,9 @@ import xlwt
 import re
 
 # Creating the Notebook Object
-file_name = 'FreshersLiveMainSheet.xls'
+file_name = 'FreshersLiveMainSheetTest.xls'
 excel_file = xlwt.Workbook()
-sheet = excel_file.add_sheet('FreshersLiveMainSheet',cell_overwrite_ok=True)
+sheet = excel_file.add_sheet('FreshersLiveMainSheetTest',cell_overwrite_ok=True)
 
 # Main Constraints
 sheet.write(0,0, 'Source')
@@ -49,7 +49,6 @@ concept_col = 1
 # Related to Question Number
 QuestionNumber_row = 1
 QuestionNumber_col = 2
-
 
 # Related to Question
 Question_row = 1
@@ -98,7 +97,6 @@ try:
         concept = i.find_all('h3',class_="h3subcat")
         for j in concept:
             concept_names.append(j.text.strip())
-        
 
     #sample_count = 1
     concept_count = 0
@@ -168,7 +166,14 @@ try:
             for sol in optionsAndAnswers:
                 sol = sol.find_all('div',class_="explanation")
                 for j in sol:
-                    myAnswers.append(j.text.replace('\n',''))
+                #print(j.text)
+                    if(j.text):
+                        myAnswers.append(j.text.replace('\n',''))
+                    else:
+                        for k in sol:
+                            k = k.find_all('div',class_="exp_text")
+                            for l in k:
+                                myAnswers.append(l.text.replace('\n',' '))
             
             # Adding Content to the Sheet
 
